@@ -17,7 +17,7 @@ from model.BiLSTM import BiLSTM
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
-device = torch.device("mps" if torch.mps.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # BiLSTM Config
 with open("/kaggle/working/training_model/config/bilstm.yaml") as f:
