@@ -2,9 +2,10 @@ import os
 import sys
 import yaml
 import torch
+import numpy as np
 from torch.utils.data import DataLoader
 from torch import nn, optim
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
 from tqdm import tqdm
 import logging
 from os import path
@@ -91,6 +92,27 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     logging.info(f"Precision: {precision:.4f}")
     logging.info(f"Recall: {recall:.4f}")
     logging.info(f"F1 Score: {f1:.4f}")
+    logging.info("----------------------------------")
+
+    # Thêm bước in Báo cáo Phân loại Chi tiết
+    logging.info("--- Detailed Classification Report ---")
+    
+    # Cần tạo danh sách tên nhãn (tag names)
+    # Giả sử self.idx2tag của Vocab chứa mapping đúng.
+    # Lấy các index có trong kết quả và map ngược lại
+    unique_labels = np.unique(true_labels)
+    # Lấy tên của các nhãn (trừ -100)
+    target_names = [vocab.idx2tag[i] for i in unique_labels if i != -100] 
+    
+    # In ra báo cáo chi tiết
+    report = classification_report(
+        true_labels, 
+        predictions, 
+        labels=[i for i in unique_labels if i != -100], 
+        target_names=target_names, 
+        zero_division=0
+    )
+    logging.info(report)
     logging.info("----------------------------------")
 
     return f1
