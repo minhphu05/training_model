@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 device = torch.device("mps" if torch.mps.is_available() else "cpu")
 
 # BiLSTM Config
-with open("config/bilstm.yaml") as f:
+with open("/kaggle/working/training_model/config/bilstm.yaml") as f:
     cfg = yaml.safe_load(f)
 
 model_cfg = cfg["model"]
