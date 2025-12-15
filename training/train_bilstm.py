@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 device = torch.device("mps" if torch.mps.is_available() else "cpu")
 
 # BiLSTM Config
-with open("../config/bilstm.yaml") as f:
+with open("config/bilstm.yaml") as f:
     cfg = yaml.safe_load(f)
 
 model_cfg = cfg["model"]
@@ -96,8 +96,8 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     return f1
 
 if __name__ == "__main__":
-    data_dir = "/Users/kittnguyen/Documents/DS201_Finance/data/labeled/ner/syllables"
-    output_dir = "/Users/kittnguyen/Documents/DS201_Finance/model_result" 
+    data_dir = "/kaggle/input/ner-dataset"
+    output_dir = "/kaggle/working/" 
     
     train_path = path.join(data_dir, "train_vifinner.jsonl")
     dev_path = path.join(data_dir, "dev_vifinner.jsonl")
