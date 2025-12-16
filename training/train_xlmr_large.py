@@ -10,10 +10,10 @@ from torch import optim
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from DataUtils.xlmr_dataset import NERDataset
+from DataUtils.xlmr_large_dataset import NERDataset
 
 from DataUtils.NER_dataset import Vocab
-from model.XLM_R import XLMR_CRF
+from model.XLMR_Large import XLMR_CRF
 
 # =====================
 # SETUP
