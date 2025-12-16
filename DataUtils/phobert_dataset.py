@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer, RobertaTokenizerFast
 import json
 
 def phobert_collate_fn(batch):
@@ -34,9 +34,9 @@ class PhoBERTNERDataset(Dataset):
                 self.data.append(json.loads(line))
 
         self.tag2idx = tag2idx
-        self.tokenizer = AutoTokenizer.from_pretrained(
+        self.tokenizer = RobertaTokenizerFast.from_pretrained(
             "vinai/phobert-base-v2",
-            use_fast=True
+            use_fast=True # Đảm bảo sử dụng phiên bản fast
         )
         self.max_length = max_length
 
