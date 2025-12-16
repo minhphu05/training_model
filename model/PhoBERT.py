@@ -6,7 +6,7 @@ from torchcrf import CRF
 class PhoBERT_CRF(nn.Module):
     def __init__(self, num_tags):
         super().__init__()
-        self.phobert = AutoModel.from_pretrained("vinai/phobert-base-v2")
+        self.phobert = AutoModel.from_pretrained("vinai/phobert-base-v2", use_fast=True)
         self.dropout = nn.Dropout(0.1)
         self.fc = nn.Linear(768, num_tags)
         self.crf = CRF(num_tags, batch_first=True)
