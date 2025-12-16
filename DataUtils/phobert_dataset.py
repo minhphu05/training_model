@@ -36,6 +36,7 @@ class PhoBERTNERDataset(Dataset):
         self.tag2idx = tag2idx
         self.tokenizer = RobertaTokenizerFast.from_pretrained(
             "vinai/phobert-base-v2",
+            add_prefix_space=True,
             use_fast=True # Đảm bảo sử dụng phiên bản fast
         )
         self.max_length = max_length
