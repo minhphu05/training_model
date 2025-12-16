@@ -35,7 +35,8 @@ class PhoBERTNERDataset(Dataset):
 
         self.tag2idx = tag2idx
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "vinai/phobert-base-v2"
+            "vinai/phobert-base-v2",
+            use_fast=True
         )
         self.max_length = max_length
 
