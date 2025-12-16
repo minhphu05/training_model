@@ -36,21 +36,23 @@ def train_one_epoch(model, dataloader, optimizer, epoch):
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
 
-        # 1. TẠO MASK HỢP LỆ
-        # mask = True ở những vị trí mà labels không phải là -100
-        mask = (labels != -100) 
+        # 1. TẠO MASK HỢP LỆ (Lọc -100: subwords, [CLS], [SEP], padding)
+        crf_mask = (labels != -100) # True ở vị trí có nhãn thực
+
+        # 2. XỬ LÝ LỖI CRF MASK: Buộc vị trí đầu tiên ([CLS]/<s>) phải là True.
+        # Thư viện torchcrf yêu cầu token đầu tiên không được bị mask.
+        crf_mask[:, 0] = True 
         
-        # 2. THAY THẾ CÁC GIÁ TRỊ -100 BẰNG MỘT GIÁ TRỊ HỢP LỆ (VÍ DỤ: 0)
-        # Điều này là cần thiết vì CRF vẫn sẽ đọc tensor labels, nhưng mask
-        # sẽ đảm bảo loss không bị tính ở đây.
+        # 3. THAY THẾ CÁC GIÁ TRỊ -100 BẰNG 0 (ID tag hợp lệ, thường là 'O')
+        # Bắt buộc phải thay thế để tránh lỗi Index Out of Bounds trên CUDA/CRF.
         labels[labels == -100] = 0 
 
         optimizer.zero_grad()
         loss = model(
             input_ids=input_ids,
-            attention_mask=attention_mask, # PhoBERT attention mask
+            attention_mask=attention_mask,
             labels=labels,
-            mask=mask # <--- TRUYỀN MASK HỢP LỆ VÀO MODEL
+            mask=crf_mask # Truyền mask đã được sửa
         )
         loss.backward()
         optimizer.step()
