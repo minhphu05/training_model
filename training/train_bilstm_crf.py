@@ -157,7 +157,7 @@ if __name__ == "__main__":
     epoch = 0
     best_f1 = 0
     patience = 0
-    patience_limit = 10
+    patience_limit = 20
     
     logging.info("Starting training ...")
     
