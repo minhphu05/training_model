@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     # LOAD FASTTEXT SAU KHI CÓ VOCAB
     logging.info("Loading fastText ...")
-    ft = fasttext.load_model("cc.vi.300.bin")
+    ft = fasttext.load_model("/kaggle/working/cc.vi.300.bin")
 
     logging.info("Building embedding matrix ...")
     embedding_matrix = build_embedding_matrix(
