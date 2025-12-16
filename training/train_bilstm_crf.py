@@ -18,10 +18,10 @@ from model.BiLSTM_CRF import BiLSTM_CRF
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
-device = torch.device("mps" if torch.mps.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # BiLSTM Config
-with open("../config/bilstm_crf.yaml") as f:
+with open("/kaggle/working/training_model/config/bilstm_crf.yaml") as f:
     cfg = yaml.safe_load(f)
 
 model_cfg = cfg["model"]
@@ -100,14 +100,14 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     return f1
 
 if __name__ == "__main__":
-    data_dir = "/Users/kittnguyen/Documents/DS201_Finance/data/labeled/ner/syllables"
-    output_dir = "/Users/kittnguyen/Documents/DS201_Finance/model_result" 
+    data_dir = "/kaggle/input/ner-dataset-crf"
+    output_dir = "/kaggle/working/" 
     
     train_path = path.join(data_dir, "train_vifinner.jsonl")
     dev_path = path.join(data_dir, "dev_vifinner.jsonl")
     test_path = path.join(data_dir, "test_vifinner.jsonl")
     
-    best_model_path = path.join(output_dir, "bilstm_best_model.pt")
+    best_model_path = path.join(output_dir, "bilstm_crf_best_model.pt")
 
     logging.info(f"Device being used: {device}")
 
