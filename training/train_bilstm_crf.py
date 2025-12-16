@@ -120,6 +120,7 @@ if __name__ == "__main__":
     test_dataset = phoNERT(test_path, vocab=vocab)
 
     logging.info("Creating dataloader ... ")
+    collate_fn = build_collate_fn(vocab)
     train_dataloader = DataLoader(
         train_dataset, 
         batch_size=32, 
