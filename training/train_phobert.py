@@ -21,7 +21,7 @@ from model.PhoBERT import PhoBERT_CRF
 # SETUP
 # =====================
 logging.basicConfig(level=logging.INFO, format="%(message)s")
-device = torch.device("mps" if torch.mps.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # =====================
@@ -87,8 +87,8 @@ def evaluate(model, dataloader):
 if __name__ == "__main__":
 
     # ---------- PATH ----------
-    data_dir = "/Users/kittnguyen/Documents/DS201_Finance/data/labeled/ner/syllables"
-    output_dir = "/Users/kittnguyen/Documents/DS201_Finance/model_result"
+    data_dir = "/kaggle/input/ner-embedding-crf"
+    output_dir = "/kaggle/working/"
     os.makedirs(output_dir, exist_ok=True)
 
     train_path = os.path.join(data_dir, "train_vifinner.jsonl")
