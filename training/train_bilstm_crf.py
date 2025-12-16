@@ -72,7 +72,9 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
 
             for pred_seq, true_seq, l in zip(preds, tags_ids, lengths):
                 true_labels.extend(true_seq[:l].cpu().tolist())
-                predictions.extend(pred_seq)
+                predictions.extend(pred_seq[:l])
+            assert len(true_labels) == len(predictions), \
+                f"Mismatch: y_true={len(true_labels)}, y_pred={len(predictions)}"
 
     precision = precision_score(true_labels, predictions, average="macro", zero_division=0)
     recall = recall_score(true_labels, predictions, average="macro", zero_division=0)
