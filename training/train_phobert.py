@@ -1,4 +1,4 @@
-import os
+import os, sys
 import torch
 from torch.utils.data import DataLoader
 from torch import optim
@@ -6,7 +6,8 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 import logging
 import numpy as np
-
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(ROOT_DIR)
 from DataUtils.phobert_dataset import PhoBERTNERDataset, phobert_collate_fn
 from DataUtils.NER_dataset import Vocab  # bạn giữ nguyên phần này để build tag vocab
 from model.PhoBERT import PhoBERT_CRF
