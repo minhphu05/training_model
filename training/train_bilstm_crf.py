@@ -13,7 +13,7 @@ from os import path
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(ROOT_DIR)
 
-from DataUtils.NER_dataset import phoNERT, Vocab, collate_fn
+from DataUtils.NER_dataset import phoNERT, Vocab, build_collate_fn
 from model.BiLSTM_CRF import BiLSTM_CRF
 
 # Setup Logging
