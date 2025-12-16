@@ -13,45 +13,38 @@ I-XXX: Inside of Entity
 O    : Outside of Entity
 """
 
-def collate_fn(items: list[dict]) -> dict:
+def collate_fn(items):
     """
     - Gom các input_ids lại
     - Gom các tags_ids lại
     - Padding cho tất cả câu có độ dài khác nhau
     - Trả ra tensor batch để đưa vào model
     """
-    # Lấy các input và label từ từng item
     input_ids = [item["input_ids"] for item in items]
     tags_ids = [item["tags_ids"] for item in items]
-    
-    # Lưu lại độ dài thực tế của từng câu
-    lengths = torch.tensor([len(seq) for seq in input_ids], dtype=torch.long)
-    
-    """
-    Example:
-        [3, 5, 7, 2]
-        [4, 1]
-        [9, 8, 3]    
-    -->
-        [
-            [3, 5, 7, 2],
-            [4, 1, 0, 0],
-            [9, 8, 3, 0]
-        ]
-    """
+
+    lengths = torch.tensor([len(x) for x in input_ids])
+
     padded_inputs = pad_sequence(
         input_ids,
         batch_first=True,
         padding_value=0
     )
+
+    pad_tag_id = vocab.tag2idx[vocab.pad_tag]
+
     padded_tags = pad_sequence(
         tags_ids,
         batch_first=True,
-        padding_value=-100
+        padding_value=pad_tag_id
     )
+
+    mask = padded_inputs != 0
+
     return {
         "input_ids": padded_inputs,
         "tags_ids": padded_tags,
+        "mask": mask,
         "lengths": lengths
     }
 
@@ -147,7 +140,10 @@ class Vocab:
         self.tag2idx = {
             tag: idx for idx, tag in enumerate(sorted(list(tag_set)))
         }
-        self.tag2idx[self.pad_tag] = -100
+        self.tag2idx = {
+            tag: idx for idx, tag in enumerate(sorted(list(tag_set)))
+        }
+        self.tag2idx[self.pad_tag] = len(self.tag2idx)  # ví dụ: id cuối
         self.idx2tag = {
             idx: tag for tag, idx in self.tag2idx.items()
         }
