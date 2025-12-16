@@ -16,9 +16,6 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train_one_epoch(model, dataloader, optimizer, epoch):
-    print(f"input_ids min/max: {input_ids.min().item()}/{input_ids.max().item()}")
-    print(f"attention_mask unique: {attention_mask.unique().tolist()}")
-    print(f"vocab_size: {model.phobert.config.vocab_size}")
     model.train()
     losses = []
 
@@ -26,6 +23,12 @@ def train_one_epoch(model, dataloader, optimizer, epoch):
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
+        print(f"batch input_ids shape: {input_ids.shape}")
+        print(f"batch labels shape: {labels.shape}")
+        print(f"input_ids max: {input_ids.max().item()}")
+        print(f"input_ids min: {input_ids.min().item()}")
+        print(f"attention_mask unique: {attention_mask.unique().tolist()}")
+        print(f"labels unique: {labels.unique().tolist()}")
 
         # Tạo mask cho CRF, True ở vị trí không phải padding (-100)
         crf_mask = labels != -100
