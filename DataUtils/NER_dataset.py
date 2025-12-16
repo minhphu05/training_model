@@ -13,7 +13,7 @@ I-XXX: Inside of Entity
 O    : Outside of Entity
 """
 
-def build_collate_fn(vocab: Vocab):
+def build_collate_fn(vocab):
     pad_tag_id = vocab.tag2idx[vocab.pad_tag]
 
     def collate_fn(items):
