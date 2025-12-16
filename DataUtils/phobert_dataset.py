@@ -3,48 +3,42 @@ from torch.utils.data import Dataset
 from transformers import RobertaTokenizerFast
 import json
 
-class PhoBERTNERDataset(Dataset):
-    def __init__(self, filepath, tag2idx, max_length=256):
-        self.data = []
-        with open(filepath, "r", encoding="utf-8") as f:
-            for line in f:
-                self.data.append(json.loads(line))
+from transformers import AutoTokenizer
 
-        self.tag2idx = tag2idx
-        self.tokenizer = RobertaTokenizerFast.from_pretrained("vinai/phobert-base-v2", add_prefix_space=True)
-        self.max_length = max_length
-        self.pad_token_id = self.tokenizer.pad_token_id
+tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
+
+class phoNERTNER(Dataset):
+    def __init__(self, filepath, tokenizer):
+        self.tokenizer = tokenizer
+        self.data = read_json_or_jsonl(filepath)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         item = self.data[idx]
-        words = item["tokens"]
-        tags = item["tags"]
+        tokens, tags = extract_data(item)  # tokens: list of words, tags: list of tags per word
 
-        encoding = self.tokenizer(words,
-                                  is_split_into_words=True,
-                                  truncation=True,
-                                  max_length=self.max_length,
-                                  padding=False,
-                                  return_offsets_mapping=False)
+        encoding = self.tokenizer(tokens, is_split_into_words=True, return_tensors="pt", truncation=True)
+        input_ids = encoding["input_ids"].squeeze(0)
+        attention_mask = encoding["attention_mask"].squeeze(0)
 
         word_ids = encoding.word_ids()
-        labels = []
-        prev_word_id = None
-        for word_id in word_ids:
-            if word_id is None:
-                labels.append(-100)  # ignore
-            elif word_id != prev_word_id:
-                labels.append(self.tag2idx[tags[word_id]])
+        new_tags = []
+        for word_idx in word_ids:
+            if word_idx is None:
+                new_tags.append(-100)  # padding or special tokens
             else:
-                labels.append(-100)  # subword token không đánh nhãn
-            prev_word_id = word_id
+                new_tags.append(vocab.tag2idx.get(tags[word_idx], -100))
 
-        encoding["labels"] = labels
-        encoding["pad_token_id"] = self.pad_token_id
-        return encoding
+        tags_ids = torch.tensor(new_tags, dtype=torch.long)
+
+        return {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "tags_ids": tags_ids
+        }
+
 
 def phobert_collate_fn(batch):
     pad_token_id = batch[0]["pad_token_id"]
