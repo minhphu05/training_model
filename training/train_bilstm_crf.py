@@ -139,7 +139,7 @@ if __name__ == "__main__":
         collate_fn=collate_fn
     )
 
-    logging.info("Building Bi-LSTM NER model ... ")
+    logging.info("Building Bi-LSTM CRF NER model ... ")
     model = BiLSTM_CRF(
         vocab_size=vocab.vocab_size,
         num_tags=vocab.num_tags,
