@@ -169,7 +169,7 @@ if __name__ == "__main__":
     ).to(device)
     
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
-    optimizer = optim.Adam(model.parameters(), lr=1e-2) 
+    optimizer = optim.Adam(model.parameters(), lr=1e-4) 
 
     epoch = 0
     best_f1 = 0
