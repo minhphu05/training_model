@@ -13,40 +13,43 @@ I-XXX: Inside of Entity
 O    : Outside of Entity
 """
 
-def collate_fn(items):
-    """
-    - Gom các input_ids lại
-    - Gom các tags_ids lại
-    - Padding cho tất cả câu có độ dài khác nhau
-    - Trả ra tensor batch để đưa vào model
-    """
-    input_ids = [item["input_ids"] for item in items]
-    tags_ids = [item["tags_ids"] for item in items]
-
-    lengths = torch.tensor([len(x) for x in input_ids])
-
-    padded_inputs = pad_sequence(
-        input_ids,
-        batch_first=True,
-        padding_value=0
-    )
-
+def build_collate_fn(vocab: Vocab):
     pad_tag_id = vocab.tag2idx[vocab.pad_tag]
 
-    padded_tags = pad_sequence(
-        tags_ids,
-        batch_first=True,
-        padding_value=pad_tag_id
-    )
+    def collate_fn(items):
+        """
+        - Gom các input_ids lại
+        - Gom các tags_ids lại
+        - Padding cho tất cả câu có độ dài khác nhau
+        - Trả ra tensor batch để đưa vào model
+        """
+        input_ids = [item["input_ids"] for item in items]
+        tags_ids = [item["tags_ids"] for item in items]
 
-    mask = padded_inputs != 0
+        lengths = torch.tensor([len(x) for x in input_ids])
 
-    return {
-        "input_ids": padded_inputs,
-        "tags_ids": padded_tags,
-        "mask": mask,
-        "lengths": lengths
-    }
+        padded_inputs = pad_sequence(
+            input_ids,
+            batch_first=True,
+            padding_value=0
+        )
+
+        padded_tags = pad_sequence(
+            tags_ids,
+            batch_first=True,
+            padding_value=pad_tag_id
+        )
+
+        mask = padded_inputs != 0
+
+        return {
+            "input_ids": padded_inputs,
+            "tags_ids": padded_tags,
+            "mask": mask,
+            "lengths": lengths
+        }
+
+    return collate_fn
 
 def read_json_or_jsonl(filepath: str) -> list:
     """
