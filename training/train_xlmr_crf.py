@@ -18,8 +18,8 @@ from model.XLM_R import XLMR_CRF
 # =====================
 # SETUP
 # =====================
-logging.basicConfig(level=logging.INFO, format="%(message)s")
-device = torch.device("mps" if torch.mps.is_available() else "cpu")
+# logging.basicConfig(level=logging.INFO, format="%(message)s")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 import os
@@ -33,8 +33,8 @@ from sklearn.metrics import f1_score
 
 from transformers import AutoTokenizer
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# logging.basicConfig(level=logging.INFO)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logging.basicConfig(level=logging.INFO)
 
 # Hàm train 1 epoch (giữ nguyên)
 def train_one_epoch(model, dataloader, optimizer, epoch):
@@ -103,8 +103,8 @@ def read_jsonl(path):
 if __name__ == "__main__":
 
     # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
-    data_dir = "/Users/kittnguyen/Documents/DS201_Finance/data/labeled/ner/syllables"
-    output_dir = "/Users/kittnguyen/Documents/DS201_Finance/model_result"
+    data_dir = "/kaggle/input/ner-embedding-crf"
+    output_dir = "/kaggle/working/"
     os.makedirs(output_dir, exist_ok=True)
 
     train_path = os.path.join(data_dir, "train_vifinner.jsonl")
