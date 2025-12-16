@@ -34,36 +34,18 @@ class BiLSTM_CRF(nn.Module):
         self.fc = nn.Linear(hidden_size * 2, num_tags)
         self.crf = CRF(num_tags, batch_first=True)
 
-    def forward(
-        self,
-        input_ids: torch.Tensor,
-        lengths: torch.Tensor,
-        tags: torch.Tensor | None = None
-    ):
-        mask = input_ids != 0   # padding_idx = 0
-
-        emb = self.dropout(self.embedding(input_ids))
-
+    def forward(self, input_ids, lengths, tags=None, mask=None):
+        emb = self.embedding(input_ids)
         packed = pack_padded_sequence(
-            emb, lengths.cpu(),
-            batch_first=True,
-            enforce_sorted=False
+            emb, lengths.cpu(), batch_first=True, enforce_sorted=False
         )
-
         packed_out, _ = self.bilstm(packed)
-
-        lstm_out, _ = pad_packed_sequence(
-            packed_out,
-            batch_first=True
-        )
-
-        emissions = self.fc(self.dropout(lstm_out))
-
-        # ===== TRAIN =====
+        out, _ = pad_packed_sequence(packed_out, batch_first=True)
+    
+        emissions = self.fc(out)
+    
         if tags is not None:
             loss = -self.crf(emissions, tags, mask=mask)
             return loss
-
-        # ===== INFER =====
-        preds = self.crf.decode(emissions, mask=mask)
-        return preds
+        else:
+            return self.crf.decode(emissions, mask=mask)
