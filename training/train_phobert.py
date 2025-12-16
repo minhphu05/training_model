@@ -35,27 +35,42 @@ def train_one_epoch(model, dataloader, optimizer, epoch):
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
-
-        # 1. TẠO MASK HỢP LỆ (Lọc -100: subwords, [CLS], [SEP], padding)
-        crf_mask = (labels != -100) # True ở vị trí có nhãn thực
-
-        # 2. XỬ LÝ LỖI CRF MASK: Buộc vị trí đầu tiên ([CLS]/<s>) phải là True.
-        # Thư viện torchcrf yêu cầu token đầu tiên không được bị mask.
-        crf_mask[:, 0] = True 
-        
-        # 3. THAY THẾ CÁC GIÁ TRỊ -100 BẰNG 0 (ID tag hợp lệ, thường là 'O')
-        # Bắt buộc phải thay thế để tránh lỗi Index Out of Bounds trên CUDA/CRF.
-        labels[labels == -100] = 0 
-
+    
+        # Kiểm tra nhanh
+        max_label = labels.max().item()
+        min_label = labels.min().item()
+        max_id = input_ids.max().item()
+        min_id = input_ids.min().item()
+        vocab_size = model.phobert.config.vocab_size
+    
+        if max_label >= model.crf.num_tags:
+            raise ValueError(f"Label vượt quá num_tags: {max_label} >= {model.crf.num_tags}")
+    
+        if min_label < 0:
+            raise ValueError(f"Label âm: {min_label}")
+    
+        if max_id >= vocab_size:
+            raise ValueError(f"input_ids vượt vocab size: {max_id} >= {vocab_size}")
+    
+        unique_mask = attention_mask.unique()
+        if not set(unique_mask.tolist()).issubset({0,1}):
+            raise ValueError(f"attention_mask có giá trị khác 0 hoặc 1: {unique_mask}")
+    
+        # Xử lý mask và label như cũ
+        crf_mask = (labels != -100)
+        crf_mask[:, 0] = True
+        labels[labels == -100] = 0
+    
         optimizer.zero_grad()
         loss = model(
             input_ids=input_ids,
             attention_mask=attention_mask,
             labels=labels,
-            mask=crf_mask # Truyền mask đã được sửa
+            mask=crf_mask
         )
         loss.backward()
         optimizer.step()
+
 
         losses.append(loss.item())
 
