@@ -1,5 +1,4 @@
 import fasttext
-from DataUtils.embeddings import build_embedding_matrix
 import os
 import sys
 import yaml
@@ -10,12 +9,13 @@ from torch import nn, optim
 from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
 from tqdm import tqdm
 import logging
-from os import path
+from os import path 
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(ROOT_DIR)
 
 from DataUtils.NER_dataset import phoNERT, Vocab, build_collate_fn
+from DataUtils.embeddings import build_embedding_matrix
 from model.BiLSTM_CRF_Pretrained_Embedding import BiLSTM_CRF
 
 # Setup Logging
@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # BiLSTM Config
-with open("/kaggle/working/training_model/config/bilstm_crf.yaml") as f:
+with open("/kaggle/working/training_model/config/bilstm_crf_pretrained_embedding.yaml") as f:
     cfg = yaml.safe_load(f)
 
 model_cfg = cfg["model"]
@@ -104,7 +104,7 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     return f1
 
 if __name__ == "__main__":
-    data_dir = "/kaggle/input/ner-dataset-crf"
+    data_dir = "/kaggle/input/ner-embedding-crf"
     output_dir = "/kaggle/working/" 
     
     train_path = path.join(data_dir, "train_vifinner.jsonl")
