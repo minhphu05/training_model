@@ -35,32 +35,23 @@ def train_one_epoch(model, dataloader, optimizer, epoch):
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
-    
-        # Kiểm tra nhanh
+        
+        # Thay -100 thành 0 trước khi kiểm tra
+        labels[labels == -100] = 0
+        
+        # Kiểm tra nhãn sau khi thay thế
         max_label = labels.max().item()
         min_label = labels.min().item()
-        max_id = input_ids.max().item()
-        min_id = input_ids.min().item()
-        vocab_size = model.phobert.config.vocab_size
-    
-        if max_label >= model.crf.num_tags:
-            raise ValueError(f"Label vượt quá num_tags: {max_label} >= {model.crf.num_tags}")
-    
         if min_label < 0:
             raise ValueError(f"Label âm: {min_label}")
-    
-        if max_id >= vocab_size:
-            raise ValueError(f"input_ids vượt vocab size: {max_id} >= {vocab_size}")
-    
-        unique_mask = attention_mask.unique()
-        if not set(unique_mask.tolist()).issubset({0,1}):
-            raise ValueError(f"attention_mask có giá trị khác 0 hoặc 1: {unique_mask}")
-    
-        # Xử lý mask và label như cũ
-        crf_mask = (labels != -100)
+        if max_label >= model.crf.num_tags:
+            raise ValueError(f"Label vượt quá num_tags: {max_label} >= {model.crf.num_tags}")
+        
+        # Tạo mask cho CRF (True ở vị trí có label thực)
+        crf_mask = (batch["labels"].to(device) != -100)
         crf_mask[:, 0] = True
-        labels[labels == -100] = 0
-    
+        
+        # Tiếp tục training
         optimizer.zero_grad()
         loss = model(
             input_ids=input_ids,
@@ -70,6 +61,7 @@ def train_one_epoch(model, dataloader, optimizer, epoch):
         )
         loss.backward()
         optimizer.step()
+
 
 
         losses.append(loss.item())
