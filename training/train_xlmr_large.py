@@ -199,7 +199,7 @@ sys.path.append(ROOT_DIR)
 
 from DataUtils.NER_dataset import phoNERT, Vocab, collate_fn
 from DataUtils.xlmr_dataset import NERDataset
-from model.XLM_R import XLMR_CRF
+from model.XLM_R import XLMR_BiLSTM
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -342,7 +342,7 @@ if __name__ == "__main__":
           
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
-    model = XLMR_CRF(num_tags=num_tags).to(device)
+    model = XLMR_BiLSTM(num_tags=num_tags).to(device)
     
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
     optimizer = optim.Adam(model.parameters(), lr=1e-3) 
