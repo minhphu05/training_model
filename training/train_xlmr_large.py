@@ -314,43 +314,44 @@ def read_jsonl(path):
 if __name__ == "__main__":
 
     # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
-    data_dir = "/kaggle/input/ner-embedding-crf"
-    output_dir = "/kaggle/working/"
-    os.makedirs(output_dir, exist_ok=True)
-
-    train_path = os.path.join(data_dir, "train_vifinner.jsonl")
-    dev_path   = os.path.join(data_dir, "dev_vifinner.jsonl")
-    test_path  = os.path.join(data_dir, "test_vifinner.jsonl")
+    data_dir = "/Users/kittnguyen/Documents/DS201_Finance/data/labeled/ner/syllables"
+    output_dir = "/Users/kittnguyen/Documents/DS201_Finance/model_result" 
+    
+    train_path = path.join(data_dir, "train_vifinner.jsonl")
+    dev_path = path.join(data_dir, "dev_vifinner.jsonl")
+    test_path = path.join(data_dir, "test_vifinner.jsonl")
     
     best_model_path = path.join(output_dir, "bilstm_best_model.pt")
 
     logging.info(f"Device being used: {device}")
 
-    # ----- Load data -----
-    logging.info("Loading datasets ...")
-    train_data = read_jsonl(train_path)
-    dev_data = read_jsonl(dev_path)
-    test_data = read_jsonl(test_path)
+    logging.info("Loading vocab ... ")
+    vocab = Vocab(filepath=train_path)
 
-    # ----- Build label vocab từ tập train -----
-    all_labels = set()
-    for sample in train_data:
-        all_labels.update(sample["tags"])
-    label2id = {label: i for i, label in enumerate(sorted(all_labels))}
-    idx2tag = {v: k for k, v in label2id.items()}  # Tạo map ngược id->tag
-    num_tags = len(label2id)
+    logging.info("Loading dataset ... ")
+    train_dataset = phoNERT(train_path, vocab=vocab)
+    dev_dataset = phoNERT(dev_path, vocab=vocab)
+    test_dataset = phoNERT(test_path, vocab=vocab)
 
-    logging.info(f"Number of tags: {num_tags}")
-    logging.info(f"Label2ID: {label2id}")
-          
-    # ----- Dataset và DataLoader -----
-    train_dataset = NERDataset(train_data, label2id, max_len=128)
-    dev_dataset = NERDataset(dev_data, label2id, max_len=128)
-    test_dataset = NERDataset(test_data, label2id, max_len=128)
-
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-    dev_loader = DataLoader(dev_dataset, batch_size=16, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+    logging.info("Creating dataloader ... ")
+    train_dataloader = DataLoader(
+        train_dataset, 
+        batch_size=32, 
+        shuffle=True, 
+        collate_fn=collate_fn
+    )
+    dev_dataloader = DataLoader(
+        dev_dataset, 
+        batch_size=32, 
+        shuffle=False, 
+        collate_fn=collate_fn
+    )
+    test_dataloader = DataLoader(
+        test_dataset, 
+        batch_size=1, 
+        shuffle=False, 
+        collate_fn=collate_fn
+    )
           
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
@@ -373,8 +374,8 @@ if __name__ == "__main__":
     
     while True:
         epoch += 1
-        train_loss = train(model, train_loader, epoch, loss_fn, optimizer)
-        f1 = evaluate(model, dev_loader, epoch, idx2tag)  # Truyền idx2tag vào
+        train_loss = train(model, train_dataloader, epoch, loss_fn, optimizer)
+        f1 = evaluate(model, dev_dataloader, epoch, idx2tag)  # Truyền idx2tag vào
         
         if f1 > best_f1:
             best_f1 = f1
@@ -393,5 +394,5 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(best_model_path))
     model.to(device)
           
-    test_f1 = evaluate(model, test_loader, epoch, idx2tag)  # Truyền idx2tag vào
+    test_f1 = evaluate(model, test_dataloader, epoch, idx2tag)  # Truyền idx2tag vào
     logging.info(f"Final F1 score on TEST set: {test_f1}")
