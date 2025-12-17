@@ -246,7 +246,7 @@ def train(model: nn.Module,
     return sum(running_loss)/len(running_loss)
 
 
-def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> float:
+def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     model.eval()
     true_labels = []
     predictions = []
@@ -293,7 +293,7 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> f
     logging.info("--- Detailed Classification Report ---")
 
     unique_labels = np.unique(true_labels)
-    target_names = [idx2tag[i] for i in unique_labels if i != -100]
+    target_names = [vocab.idx2tag[i] for i in unique_labels if i != -100]
 
     report = classification_report(
         true_labels,
@@ -379,7 +379,7 @@ if __name__ == "__main__":
     while True:
         epoch += 1
         train_loss = train(model, train_dataloader, epoch, loss_fn, optimizer)
-        f1 = evaluate(model, dev_dataloader, epoch, idx2tag)  # Truyền idx2tag vào
+        f1 = evaluate(model, dev_dataloader, epoch)  # Truyền idx2tag vào
         
         if f1 > best_f1:
             best_f1 = f1
