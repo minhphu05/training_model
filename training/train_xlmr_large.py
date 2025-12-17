@@ -361,8 +361,8 @@ if __name__ == "__main__":
     
     while True:
         epoch += 1
-        train_loss = train(model, train_dataloader, epoch, loss_fn, optimizer)
-        f1 = evaluate(model, dev_dataloader, epoch)
+        train_loss = train(model, train_loader, epoch, loss_fn, optimizer)
+        f1 = evaluate(model, dev_loader, epoch)
         
         if f1 > best_f1:
             best_f1 = f1
@@ -381,6 +381,6 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(best_model_path))
     model.to(device)
           
-    test_f1 = evaluate(model, test_dataloader, epoch)
+    test_f1 = evaluate(model, test_loader, epoch)
     logging.info(f"Final F1 score on TEST set: {test_f1}")
 
