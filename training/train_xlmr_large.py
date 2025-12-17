@@ -198,6 +198,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(ROOT_DIR)
 
 from DataUtils.NER_dataset import phoNERT, Vocab, collate_fn
+from DataUtils.xlmr_dataset import NERDataset
 from model.XLM_R import XLMR_CRF
 
 # Setup Logging
