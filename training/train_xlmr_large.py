@@ -336,7 +336,7 @@ if __name__ == "__main__":
     )
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
-    model = XLMR_CRF(num_tags=num_tags).to(device)
+    model = XLMR_CRF(num_tags=vocab.num_tags).to(device)
     
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
     optimizer = optim.Adam(model.parameters(), lr=1e-3) 
