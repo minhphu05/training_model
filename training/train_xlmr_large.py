@@ -217,15 +217,14 @@ def train(model: nn.Module,
 
     for batch in pbar:
         input_ids = batch["input_ids"].to(device)
-        tags_ids = batch["labels"].to(device) 
-        # lengths = batch["lengths"] 
+        tags_ids = batch["labels"].to(device)
+        attention_mask = batch["attention_mask"].to(device)
+        lengths = attention_mask.sum(dim=1).to(device)  # tính lengths
 
         optimizer.zero_grad()
-        logits = model(input_ids, attention_mask=batch["attention_mask"].to(device))
+        logits = model(input_ids, attention_mask=attention_mask, lengths=lengths)  # truyền lengths
 
         # Flatten output và labels để tính Loss
-        # Logits: [Batch * Seq, Num_Tags]
-        # Labels: [Batch * Seq]
         loss = loss_fn(logits.view(-1, logits.shape[-1]), tags_ids.view(-1))
 
         loss.backward()
@@ -235,6 +234,7 @@ def train(model: nn.Module,
         pbar.set_postfix({"loss": sum(running_loss)/len(running_loss)})
     
     return sum(running_loss)/len(running_loss)
+
 
 def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> float:
     model.eval()
@@ -248,8 +248,9 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> f
             input_ids = batch["input_ids"].to(device)
             labels = batch["labels"].to(device)
             attention_mask = batch["attention_mask"].to(device)
+            lengths = attention_mask.sum(dim=1).to(device)  # tính lengths
 
-            logits = model(input_ids, attention_mask=attention_mask)
+            logits = model(input_ids, attention_mask=attention_mask, lengths=lengths)  # truyền lengths
             predicted_tags = torch.argmax(logits, dim=-1)
 
             # Lọc bỏ padding (-100) để tính điểm chính xác
@@ -288,16 +289,6 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> f
     logging.info("----------------------------------")
 
     return f1
-
-          
-def read_jsonl(path):
-    import json
-    data = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            data.append(json.loads(line))
-    return data
-
 
 if __name__ == "__main__":
 
