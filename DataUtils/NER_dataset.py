@@ -248,44 +248,31 @@ O    : Outside of Entity
 """
 
 def collate_fn(items: list[dict]) -> dict:
-    """
-    - Gom các input_ids lại
-    - Gom các tags_ids lại
-    - Padding cho tất cả câu có độ dài khác nhau
-    - Trả ra tensor batch để đưa vào model
-    """
-    # Lấy các input và label từ từng item
     input_ids = [item["input_ids"] for item in items]
     tags_ids = [item["tags_ids"] for item in items]
-    
-    # Lưu lại độ dài thực tế của từng câu
-    lengths = torch.tensor([len(seq) for seq in input_ids], dtype=torch.long)
-    
-    """
-    Example:
-        [3, 5, 7, 2]
-        [4, 1]
-        [9, 8, 3]    
-    -->
-        [
-            [3, 5, 7, 2],
-            [4, 1, 0, 0],
-            [9, 8, 3, 0]
-        ]
-    """
+
     padded_inputs = pad_sequence(
         input_ids,
         batch_first=True,
         padding_value=0
     )
+
     padded_tags = pad_sequence(
         tags_ids,
         batch_first=True,
         padding_value=-100
     )
+
+    # attention_mask: 1 = token thật, 0 = PAD
+    attention_mask = (padded_inputs != 0).long()
+
+    # lengths cho pack_padded_sequence
+    lengths = attention_mask.sum(dim=1)
+
     return {
         "input_ids": padded_inputs,
         "tags_ids": padded_tags,
+        "attention_mask": attention_mask,
         "lengths": lengths
     }
 
