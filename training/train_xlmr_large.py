@@ -217,13 +217,11 @@ def train(model: nn.Module,
 
     for batch in pbar:
         input_ids = batch["input_ids"].to(device)
-        tags_ids = batch["tags_ids"].to(device) 
-        lengths = batch["lengths"] 
+        tags_ids = batch["labels"].to(device) 
+        # lengths = batch["lengths"] 
 
         optimizer.zero_grad()
-        
-        # Forward pass
-        logits = model(input_ids, lengths) 
+        logits = model(input_ids, attention_mask=batch["attention_mask"].to(device))
 
         # Flatten output và labels để tính Loss
         # Logits: [Batch * Seq, Num_Tags]
@@ -238,7 +236,7 @@ def train(model: nn.Module,
     
     return sum(running_loss)/len(running_loss)
 
-def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
+def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> float:
     model.eval()
     true_labels = []
     predictions = []
@@ -248,19 +246,19 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     with torch.no_grad():
         for batch in pbar:
             input_ids = batch["input_ids"].to(device)
-            tags_ids = batch["tags_ids"].to(device)
-            lengths = batch["lengths"]
+            labels = batch["labels"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
 
-            logits = model(input_ids, lengths)
+            logits = model(input_ids, attention_mask=attention_mask)
             predicted_tags = torch.argmax(logits, dim=-1)
 
             # Lọc bỏ padding (-100) để tính điểm chính xác
-            mask = tags_ids != -100
+            mask = labels != -100
             
-            valid_tags = tags_ids[mask].cpu().numpy()
+            valid_labels = labels[mask].cpu().numpy()
             valid_preds = predicted_tags[mask].cpu().numpy()
 
-            true_labels.extend(valid_tags)
+            true_labels.extend(valid_labels)
             predictions.extend(valid_preds)
             
     # Tính toán Metrics
@@ -273,28 +271,24 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     logging.info(f"F1 Score: {f1:.4f}")
     logging.info("----------------------------------")
 
-    # Thêm bước in Báo cáo Phân loại Chi tiết
+    # Báo cáo phân loại chi tiết
     logging.info("--- Detailed Classification Report ---")
-    
-    # Cần tạo danh sách tên nhãn (tag names)
-    # Giả sử self.idx2tag của Vocab chứa mapping đúng.
-    # Lấy các index có trong kết quả và map ngược lại
+
     unique_labels = np.unique(true_labels)
-    # Lấy tên của các nhãn (trừ -100)
-    target_names = [vocab.idx2tag[i] for i in unique_labels if i != -100] 
-    
-    # In ra báo cáo chi tiết
+    target_names = [idx2tag[i] for i in unique_labels if i != -100]
+
     report = classification_report(
-        true_labels, 
-        predictions, 
-        labels=[i for i in unique_labels if i != -100], 
-        target_names=target_names, 
+        true_labels,
+        predictions,
+        labels=[i for i in unique_labels if i != -100],
+        target_names=target_names,
         zero_division=0
     )
     logging.info(report)
     logging.info("----------------------------------")
 
     return f1
+
           
 def read_jsonl(path):
     import json
@@ -331,6 +325,7 @@ if __name__ == "__main__":
     for sample in train_data:
         all_labels.update(sample["tags"])
     label2id = {label: i for i, label in enumerate(sorted(all_labels))}
+    idx2tag = {v: k for k, v in label2id.items()}  # Tạo map ngược id->tag
     num_tags = len(label2id)
 
     logging.info(f"Number of tags: {num_tags}")
@@ -362,7 +357,7 @@ if __name__ == "__main__":
     while True:
         epoch += 1
         train_loss = train(model, train_loader, epoch, loss_fn, optimizer)
-        f1 = evaluate(model, dev_loader, epoch)
+        f1 = evaluate(model, dev_loader, epoch, idx2tag)  # Truyền idx2tag vào
         
         if f1 > best_f1:
             best_f1 = f1
@@ -381,6 +376,5 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(best_model_path))
     model.to(device)
           
-    test_f1 = evaluate(model, test_loader, epoch)
+    test_f1 = evaluate(model, test_loader, epoch, idx2tag)  # Truyền idx2tag vào
     logging.info(f"Final F1 score on TEST set: {test_f1}")
-
