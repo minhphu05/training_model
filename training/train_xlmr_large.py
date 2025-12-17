@@ -307,36 +307,34 @@ if __name__ == "__main__":
 
     logging.info(f"Device being used: {device}")
 
-    logging.info("Loading vocab ... ")
-    vocab = Vocab(filepath=train_path)
+    # ----- Load data -----
+    logging.info("Loading datasets ...")
+    train_data = read_jsonl(train_path)
+    dev_data = read_jsonl(dev_path)
+    test_data = read_jsonl(test_path)
 
-    logging.info("Loading dataset ... ")
-    train_dataset = phoNERT(train_path, vocab=vocab)
-    dev_dataset = phoNERT(dev_path, vocab=vocab)
-    test_dataset = phoNERT(test_path, vocab=vocab)
+    # ----- Build label vocab từ tập train -----
+    all_labels = set()
+    for sample in train_data:
+        all_labels.update(sample["tags"])
+    label2id = {label: i for i, label in enumerate(sorted(all_labels))}
+    num_tags = len(label2id)
 
-    logging.info("Creating dataloader ... ")
-    train_dataloader = DataLoader(
-        train_dataset, 
-        batch_size=32, 
-        shuffle=True, 
-        collate_fn=collate_fn
-    )
-    dev_dataloader = DataLoader(
-        dev_dataset, 
-        batch_size=32, 
-        shuffle=False, 
-        collate_fn=collate_fn
-    )
-    test_dataloader = DataLoader(
-        test_dataset, 
-        batch_size=1, 
-        shuffle=False, 
-        collate_fn=collate_fn
-    )
+    logging.info(f"Number of tags: {num_tags}")
+    logging.info(f"Label2ID: {label2id}")
+          
+    # ----- Dataset và DataLoader -----
+    train_dataset = NERDataset(train_data, label2id, max_len=128)
+    dev_dataset = NERDataset(dev_data, label2id, max_len=128)
+    test_dataset = NERDataset(test_data, label2id, max_len=128)
+
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+    dev_loader = DataLoader(dev_dataset, batch_size=16, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+          
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
-    model = XLMR_CRF(num_tags=vocab.num_tags).to(device)
+    model = XLMR_CRF(num_tags=num_tags).to(device)
     
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
     optimizer = optim.Adam(model.parameters(), lr=1e-3) 
@@ -344,7 +342,7 @@ if __name__ == "__main__":
     epoch = 0
     best_f1 = 0
     patience = 0
-    patience_limit = 10
+    patience_limit = 5
     
     logging.info("Starting training ...")
     
