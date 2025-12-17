@@ -355,7 +355,7 @@ if __name__ == "__main__":
           
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
-    model = XLMR_BiLSTM(num_tags=num_tags).to(device)
+    model = XLMR_BiLSTM(num_tags=vocab.num_tags).to(device)
     
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
     # optimizer = optim.AdamW(model.parameters(), lr=3e-5)
