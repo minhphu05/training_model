@@ -222,7 +222,13 @@ def train(model: nn.Module,
         # lengths = attention_mask.sum(dim=1).to(device)  # tính lengths
 
         optimizer.zero_grad()
-        logits = model(input_ids, attention_mask=batch["attention_mask"].to(device))   # truyền lengths
+        lengths = attention_mask.sum(dim=1)
+
+        logits = model(
+              input_ids,
+              attention_mask=attention_mask,
+              lengths=lengths
+        )
 
         # Flatten output và labels để tính Loss
         loss = loss_fn(logits.view(-1, logits.shape[-1]), tags_ids.view(-1))
@@ -250,7 +256,14 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> f
             attention_mask = batch["attention_mask"].to(device)
             # lengths = attention_mask.sum(dim=1).to(device)  # tính lengths
 
-            logits = model(input_ids, attention_mask=batch["attention_mask"].to(device))  # truyền lengths
+            lengths = attention_mask.sum(dim=1)
+
+            logits = model(
+                input_ids,
+                attention_mask=attention_mask,
+                lengths=lengths
+            )
+            # truyền lengths
             predicted_tags = torch.argmax(logits, dim=-1)
 
             # Lọc bỏ padding (-100) để tính điểm chính xác
