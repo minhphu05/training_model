@@ -314,8 +314,8 @@ def read_jsonl(path):
 if __name__ == "__main__":
 
     # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
-    data_dir = "/Users/kittnguyen/Documents/DS201_Finance/data/labeled/ner/syllables"
-    output_dir = "/Users/kittnguyen/Documents/DS201_Finance/model_result" 
+    data_dir = "/kaggle/input/ner-embedding-crf"
+    output_dir = "/kaggle/working/" 
     
     train_path = path.join(data_dir, "train_vifinner.jsonl")
     dev_path = path.join(data_dir, "dev_vifinner.jsonl")
