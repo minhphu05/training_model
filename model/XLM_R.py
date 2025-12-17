@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from transformers import AutoModel
 
 class XLMR_BiLSTM(nn.Module):
@@ -26,14 +27,28 @@ class XLMR_BiLSTM(nn.Module):
         
         self.fc = nn.Linear(hidden_size * 2, num_tags)
 
-    def forward(self, input_ids, attention_mask):
+    def forward(self, input_ids, attention_mask, lengths):
         outputs = self.xlmroberta(
             input_ids=input_ids,
             attention_mask=attention_mask
         )
         x = self.dropout(outputs.last_hidden_state)  # (batch, seq_len, 768)
         
-        lstm_out, _ = self.bilstm(x)  # (batch, seq_len, hidden_size*2)
+        # Xử lý pack padded sequence để bỏ phần padding
+        packed_input = pack_padded_sequence(
+            x, 
+            lengths.cpu(),
+            batch_first=True,
+            enforce_sorted=False
+        )
         
-        logits = self.fc(lstm_out)  # (batch, seq_len, num_tags)
+        packed_output, _ = self.bilstm(packed_input)
+        
+        output, _ = pad_packed_sequence(
+            packed_output,
+            batch_first=True
+        )
+        
+        output = self.dropout(output)
+        logits = self.fc(output)  # (batch, seq_len, num_tags)
         return logits
