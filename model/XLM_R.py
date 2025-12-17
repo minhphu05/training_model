@@ -98,21 +98,22 @@ class XLMR_BiLSTM(nn.Module):
 
         x = self.dropout(outputs.last_hidden_state)
 
-        packed_input = pack_padded_sequence(
+        packed = pack_padded_sequence(
             x,
             lengths.cpu(),
             batch_first=True,
             enforce_sorted=False
         )
 
-        packed_output, _ = self.bilstm(packed_input)
+        packed_out, _ = self.bilstm(packed)
 
-        output, _ = pad_packed_sequence(
-            packed_output,
-            batch_first=True
+        lstm_out, _ = pad_packed_sequence(
+            packed_out,
+            batch_first=True,
+            total_length=input_ids.size(1)  # ⭐ CỰC KỲ QUAN TRỌNG
         )
 
-        logits = self.fc(self.dropout(output))
+        logits = self.fc(self.dropout(lstm_out))
         return logits
 
     
