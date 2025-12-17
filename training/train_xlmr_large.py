@@ -294,14 +294,26 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     logging.info("----------------------------------")
 
     return f1
+          
+def read_jsonl(path):
+    import json
+    data = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            data.append(json.loads(line))
+    return data
+
 
 if __name__ == "__main__":
-    data_dir = "/kaggle/input/ner-embedding-crf"
-    output_dir = "/kaggle/working/" 
-    
-    train_path = path.join(data_dir, "train_vifinner.jsonl")
-    dev_path = path.join(data_dir, "dev_vifinner.jsonl")
-    test_path = path.join(data_dir, "test_vifinner.jsonl")
+
+    # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
+    data_dir = "/kaggle/input/vifin-ner"
+    output_dir = "/kaggle/working/"
+    os.makedirs(output_dir, exist_ok=True)
+
+    train_path = os.path.join(data_dir, "train_vifinner.jsonl")
+    dev_path   = os.path.join(data_dir, "dev_vifinner.jsonl")
+    test_path  = os.path.join(data_dir, "test_vifinner.jsonl")
     
     best_model_path = path.join(output_dir, "bilstm_best_model.pt")
 
