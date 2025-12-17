@@ -357,7 +357,12 @@ if __name__ == "__main__":
     model = XLMR_BiLSTM(num_tags=num_tags).to(device)
     
     loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3) 
+    # optimizer = optim.AdamW(model.parameters(), lr=3e-5)
+    optimizer = optim.AdamW([
+              {"params": model.xlmroberta.parameters(), "lr": 2e-5},
+              {"params": model.bilstm.parameters(), "lr": 1e-3},
+              {"params": model.fc.parameters(), "lr": 1e-3},
+    ])
 
     epoch = 0
     best_f1 = 0
