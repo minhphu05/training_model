@@ -290,6 +290,14 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int, idx2tag: dict) -> f
 
     return f1
 
+def read_jsonl(path):
+    import json
+    data = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            data.append(json.loads(line))
+    return data
+
 if __name__ == "__main__":
 
     # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
