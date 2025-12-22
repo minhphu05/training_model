@@ -102,12 +102,12 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     return f1
 
 if __name__ == "__main__":
-    data_dir = "/kaggle/input/ner-dataset-crf-final"
+    data_dir = "/kaggle/input/final-ner-dataset"
     output_dir = "/kaggle/working/" 
     
-    train_path = path.join(data_dir, "train_vifinner.jsonl")
-    dev_path = path.join(data_dir, "dev_vifinner.jsonl")
-    test_path = path.join(data_dir, "test_vifinner.jsonl")
+    train_path = path.join(data_dir, "final_train_vifinner.jsonl")
+    dev_path = path.join(data_dir, "final_dev_vifinner.jsonl")
+    test_path = path.join(data_dir, "final_test_vifinner.jsonl")
     
     best_model_path = path.join(output_dir, "bilstm_crf_best_model.pt")
 
