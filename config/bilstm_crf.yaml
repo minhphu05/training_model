@@ -4,6 +4,6 @@ model:
     padding_idx: 0
 
   encoder:
-    hidden_size: 200
-    num_layers: 2
-    dropout: 0.25
+    hidden_size: 256
+    num_layers: 3
+    dropout: 0.3
