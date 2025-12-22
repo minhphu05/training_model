@@ -136,15 +136,15 @@ if __name__ == "__main__":
     dev_dataset = NERDataset(dev_data, label2id, max_len=128)
     test_dataset = NERDataset(test_data, label2id, max_len=128)
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-    dev_loader = DataLoader(dev_dataset, batch_size=16, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+    dev_loader = DataLoader(dev_dataset, batch_size=64, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
     model = XLMR_CRF_Large(num_tags=num_tags).to(device)
 
-    optimizer = optim.AdamW(model.parameters(), lr=3e-5)
+    optimizer = optim.AdamW(model.parameters(), lr=1e-5)
 
     # ----- Train loop -----
     best_f1 = 0.0
