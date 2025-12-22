@@ -102,7 +102,7 @@ def evaluate(model: nn.Module, data: DataLoader, epoch: int) -> float:
     return f1
 
 if __name__ == "__main__":
-    data_dir = "/kaggle/input/ner-dataset-crf"
+    data_dir = "/kaggle/input/ner-dataset-crf-final"
     output_dir = "/kaggle/working/" 
     
     train_path = path.join(data_dir, "train_vifinner.jsonl")
