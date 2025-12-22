@@ -3,7 +3,7 @@ from torch import nn
 from transformers import AutoModel
 from torchcrf import CRF
 
-class XLMR_CRF(nn.Module):
+class XLMR_CRF_Large(nn.Module):
     def __init__(self, num_tags):
         super().__init__()
         # Load xlm-roberta-large
