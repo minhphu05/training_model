@@ -136,9 +136,9 @@ if __name__ == "__main__":
     dev_dataset = NERDataset(dev_data, label2id, max_len=128)
     test_dataset = NERDataset(test_data, label2id, max_len=128)
 
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    dev_loader = DataLoader(dev_dataset, batch_size=64, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    dev_loader = DataLoader(dev_dataset, batch_size=32, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
