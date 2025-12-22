@@ -103,13 +103,13 @@ def read_jsonl(path):
 if __name__ == "__main__":
 
     # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
-    data_dir = "/kaggle/input/ner-embedding-crf"
+    data_dir = "/kaggle/input/final-ner-embedding-dataset"
     output_dir = "/kaggle/working/"
     os.makedirs(output_dir, exist_ok=True)
 
-    train_path = os.path.join(data_dir, "train_vifinner.jsonl")
-    dev_path   = os.path.join(data_dir, "dev_vifinner.jsonl")
-    test_path  = os.path.join(data_dir, "test_vifinner.jsonl")
+    train_path = os.path.join(data_dir, "final_train_vifinner.jsonl")
+    dev_path   = os.path.join(data_dir, "final_dev_vifinner.jsonl")
+    test_path  = os.path.join(data_dir, "final_test_vifinner.jsonl")
 
     best_model_path = os.path.join(output_dir, "xlmr_crf_best.pt")
 
