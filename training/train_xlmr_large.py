@@ -103,7 +103,7 @@ def read_jsonl(path):
 if __name__ == "__main__":
 
     # ----- Đường dẫn data bạn chỉnh lại theo đúng máy bạn -----
-    data_dir = "/kaggle/input/vifin-ner"
+    data_dir = "/kaggle/input/final-vifin-ner"
     output_dir = "/kaggle/working/"
     os.makedirs(output_dir, exist_ok=True)
 
