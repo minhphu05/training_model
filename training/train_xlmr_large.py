@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
     # ----- Model -----
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
-    model = XLMR_CRF(num_tags=num_tags).to(device)
+    model = XLMR_CRF_Large(num_tags=num_tags).to(device)
 
     optimizer = optim.AdamW(model.parameters(), lr=3e-5)
 
