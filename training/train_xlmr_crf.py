@@ -190,9 +190,9 @@ if __name__ == "__main__":
     dev_dataset = NERDataset(dev_data, label2id, max_len=128)
     test_dataset = NERDataset(test_data, label2id, max_len=128)
 
-    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-    dev_loader = DataLoader(dev_dataset, batch_size=16, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    dev_loader = DataLoader(dev_dataset, batch_size=32, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     # ----- Model -----
     logging.info("Building XLM-RoBERTa + CRF model ...")
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     # ----- Train loop -----
     best_f1 = 0.0
     patience = 0
-    patience_limit = 5
+    patience_limit = 1
     epoch = 0
     max_epoch = 30
 
