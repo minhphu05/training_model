@@ -61,33 +61,87 @@ def train_one_epoch(model, dataloader, optimizer, epoch):
 
 
 # Hàm evaluate (sửa lại để mask đúng)
-def evaluate(model, dataloader):
+from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
+import numpy as np
+import logging
+from tqdm import tqdm
+import torch
+
+
+def evaluate(model, dataloader, epoch, label2id):
+    """
+    model: XLMR_CRF
+    dataloader: DataLoader
+    epoch: int (để in tqdm giống hàm mẫu)
+    label2id: dict {label: id}
+    """
     model.eval()
-    y_true, y_pred = [], []
+    true_labels = []
+    predictions = []
+
+    # tạo id2label để in report
+    id2label = {v: k for k, v in label2id.items()}
+
+    pbar = tqdm(dataloader, desc=f"Epoch {epoch} - Evaluation")
 
     with torch.no_grad():
-        for batch in tqdm(dataloader, desc="Evaluate"):
+        for batch in pbar:
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device)
 
+            # CRF decode → list[list[int]]
             preds = model(
                 input_ids=input_ids,
                 attention_mask=attention_mask
-            )  # list of list of tag ids (batch)
+            )
 
-            # Lặp qua batch
+            # duyệt từng sample trong batch
             for pred_seq, label_seq, mask_seq in zip(preds, labels, attention_mask):
                 valid_len = mask_seq.sum().item()
-                # Lọc chỉ token không phải padding và không phải label -100
+
                 label_seq = label_seq[:valid_len].cpu().numpy()
-                pred_seq = pred_seq[:valid_len]
+                pred_seq = np.array(pred_seq[:valid_len])
 
-                mask_label = label_seq != -100
-                y_true.extend(label_seq[mask_label])
-                y_pred.extend(np.array(pred_seq)[mask_label])
+                # bỏ padding & subword (-100)
+                mask = label_seq != -100
 
-    f1 = f1_score(y_true, y_pred, average="macro")
+                true_labels.extend(label_seq[mask])
+                predictions.extend(pred_seq[mask])
+
+    # ===== Metrics =====
+    precision = precision_score(
+        true_labels, predictions, average="macro", zero_division=0
+    )
+    recall = recall_score(
+        true_labels, predictions, average="macro", zero_division=0
+    )
+    f1 = f1_score(
+        true_labels, predictions, average="macro", zero_division=0
+    )
+
+    logging.info(f"Precision: {precision:.4f}")
+    logging.info(f"Recall:    {recall:.4f}")
+    logging.info(f"F1 Score:  {f1:.4f}")
+    logging.info("----------------------------------")
+
+    # ===== Classification Report =====
+    logging.info("--- Detailed Classification Report ---")
+
+    unique_labels = sorted(set(true_labels))
+    target_names = [id2label[i] for i in unique_labels]
+
+    report = classification_report(
+        true_labels,
+        predictions,
+        labels=unique_labels,
+        target_names=target_names,
+        zero_division=0
+    )
+
+    logging.info(report)
+    logging.info("----------------------------------")
+
     return f1
 
 
