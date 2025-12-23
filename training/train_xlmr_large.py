@@ -144,21 +144,21 @@ if __name__ == "__main__":
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
     model = XLMR_CRF_Large(num_tags=num_tags).to(device)
 
-    optimizer = optim.AdamW(
+    optimizer = torch.optim.AdamW(
     [
         {
-            "params": model.xlm_roberta.parameters(),
-            "lr": 1e-6,          # LR nhỏ cho pretrained
+            "params": model.xlmroberta.parameters(),
+            "lr": 1e-9,
             "weight_decay": 0.01
         },
         {
             "params": model.fc.parameters(),
-            "lr": 1e-3,          # LR lớn cho head
+            "lr": 1e-3,
             "weight_decay": 0.01
         },
         {
             "params": model.crf.parameters(),
-            "lr": 1e-3,          # LR lớn cho CRF
+            "lr": 1e-3,
             "weight_decay": 0.01
         }
     ]
