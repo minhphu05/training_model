@@ -213,7 +213,7 @@ if __name__ == "__main__":
         epoch += 1
 
         train_loss = train_one_epoch(model, train_loader, optimizer, epoch)
-        f1 = evaluate(model, dev_loader)
+        f1 = evaluate(model, dev_loader, epoch, label2id)
 
         logging.info(f"Epoch {epoch} | Train loss: {train_loss:.4f} | Dev F1: {f1:.4f}")
 
@@ -233,5 +233,5 @@ if __name__ == "__main__":
     # ----- Test -----
     logging.info("Evaluating best model on TEST set ...")
     model.load_state_dict(torch.load(best_model_path))
-    test_f1 = evaluate(model, test_loader)
+    test_f1 = evaluate(model, test_loader, epoch="TEST", label2id=label2id)
     logging.info(f"Final TEST F1: {test_f1:.4f}")
