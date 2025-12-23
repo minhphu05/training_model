@@ -144,7 +144,25 @@ if __name__ == "__main__":
     logging.info("Building XLM-RoBERTa Large + CRF model ...")
     model = XLMR_CRF_Large(num_tags=num_tags).to(device)
 
-    optimizer = optim.AdamW(model.parameters(), lr=1e-5)
+    optimizer = optim.AdamW(
+    [
+        {
+            "params": model.xlm_roberta.parameters(),
+            "lr": 1e-6,          # LR nhỏ cho pretrained
+            "weight_decay": 0.01
+        },
+        {
+            "params": model.fc.parameters(),
+            "lr": 1e-3,          # LR lớn cho head
+            "weight_decay": 0.01
+        },
+        {
+            "params": model.crf.parameters(),
+            "lr": 1e-3,          # LR lớn cho CRF
+            "weight_decay": 0.01
+        }
+    ]
+)
 
     # ----- Train loop -----
     best_f1 = 0.0
